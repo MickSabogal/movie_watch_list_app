@@ -14,7 +14,34 @@ app.use(express.json());
 // Esta constante é relativa às coleções da tua base de dados e deves acrescentar mais se for o caso
 const Movie = require('./models/Movie');
 
+// ================= LOGIN SIMPLES =================
 
+const LOGIN_USER = { username: 'admin', password: '1234'};
+
+app.post('/api/login', (req, res) => {
+    const { username, password } = req.body;
+    if (username === LOGIN_USER.username && password === LOGIN_USER.password){
+        // Cookies de sessão simples salvas (expiram em 1 hora)
+        res.cookie('loggedIn', true, { httpOnly: true, maxAge: 3600000 });
+        return res.json({ message: 'Login bem-sucedido' });
+    }else {
+        return res.status(401).json({ error: 'Credenciais inválidas' });
+    }
+});
+
+app.post('/api/logout', (req, res) => {
+    res.clearCookie('loggedIn');
+    res.json({ message: 'Logout bem-sucedido' });
+});
+
+// Middleware para proteger rotas da informação
+function checkLogin(req, res, nextMiddleware) {
+    if (req.cookies.loggedIn) {
+        nextMiddleware();
+    } else {
+        res.status(401).json({ error: 'Não autorizado' });
+    }
+}
 
 // ===== ENDPOINTS DA API =====
 

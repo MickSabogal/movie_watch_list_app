@@ -7,8 +7,6 @@ const movieSchema = new mongoose.Schema({
     watched: { type: Boolean, default: false },
     rating: { type: Number },
     createdAt: { type: Date, default: Date.now }
-}, {
-    versionKey: false
 });
 
 module.exports = mongoose.model('Movie', movieSchema);
