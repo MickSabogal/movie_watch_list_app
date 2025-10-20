@@ -2,29 +2,30 @@
 const express = require('express');
 const next = require('next');
 const cors = require('cors');
+const cookieParser = require('cookie-parser');
 require('dotenv').config();
-const connectDB = require('./lib/mongodb');
+const connectDB = require('./lib/mongodb'); // tu función de conexión a MongoDB
+const Movie = require('./models/Movie'); // tu modelo Movie
+
 const dev = process.env.NODE_ENV !== 'production';
 const nextApp = next({ dev });
 const handle = nextApp.getRequestHandler();
 const app = express();
+
+// ===== MIDDLEWARES =====
 app.use(cors());
 app.use(express.json());
+app.use(cookieParser());
 
-// Esta constante é relativa às coleções da tua base de dados e deves acrescentar mais se for o caso
-const Movie = require('./models/Movie');
-
-// ================= LOGIN SIMPLES =================
-
-const LOGIN_USER = { username: 'admin', password: '1234'};
+// ===== LOGIN SIMPLES =====
+const LOGIN_USER = { username: 'admin', password: '1234' };
 
 app.post('/api/login', (req, res) => {
     const { username, password } = req.body;
-    if (username === LOGIN_USER.username && password === LOGIN_USER.password){
-        // Cookies de sessão simples salvas (expiram em 1 hora)
-        res.cookie('loggedIn', true, { httpOnly: true, maxAge: 3600000 });
+    if (username === LOGIN_USER.username && password === LOGIN_USER.password) {
+        res.cookie('loggedIn', true, { httpOnly: true, maxAge: 3600000 }); // 1 hora
         return res.json({ message: 'Login bem-sucedido' });
-    }else {
+    } else {
         return res.status(401).json({ error: 'Credenciais inválidas' });
     }
 });
@@ -34,7 +35,7 @@ app.post('/api/logout', (req, res) => {
     res.json({ message: 'Logout bem-sucedido' });
 });
 
-// Middleware para proteger rotas da informação
+// ===== MIDDLEWARE PARA PROTEGER ROTAS =====
 function checkLogin(req, res, nextMiddleware) {
     if (req.cookies.loggedIn) {
         nextMiddleware();
@@ -43,12 +44,13 @@ function checkLogin(req, res, nextMiddleware) {
     }
 }
 
-// ===== ENDPOINTS DA API =====
+// ===== ENDPOINTS DOS FILMES =====
 
-// GET /api/nomes - Retorna todos os 'movies' existentes
-app.get('/api/movies', async (req, res) => {
+//GET /api/movies - Retorna todos os filmes
+
+app.get('/api/movies', checkLogin, async (req, res) => {
     try {
-        const movies = await Movie.find().sort({ movie: 1 });
+        const movies = await Movie.find();
         res.json(movies);
     } catch (error) {
         console.error('Erro ao carregar movies:', error);
@@ -56,41 +58,72 @@ app.get('/api/movies', async (req, res) => {
     }
 });
 
-// POST /api/nomes - Adiciona um novo nome à coleção "nomes"
-app.post('/api/nomes', async (req, res) => {
+// POST /api/movies - adicionar um filme novo
+app.post('/api/movies', checkLogin, async (req, res) => {
     try {
-        const { nome } = req.body;
+        const { title, year, genre, rating, watched } = req.body;
+        if (!title) return res.status(400).json({ erro: 'Título é obrigatório' });
 
-        if (!nome || !nome.trim()) {
-            return res.status(400).json({ erro: 'Nome é obrigatório' });
-        }
-
-        const novoNome = new Nome({ nome: nome.trim() });
-        const nomeSalvo = await novoNome.save();
-        res.status(201).json(nomeSalvo);
+        const newMovie = new Movie({
+            title,
+            year,
+            genre,
+            rating,
+            watched
+        });
+        const savedMovie = await newMovie.save();
+        res.status(201).json(savedMovie);
     } catch (error) {
-        if (error.code === 11000) {
-            return res.status(400).json({ erro: 'Este nome já existe' });
-        }
-        console.error('Erro ao criar nome:', error);
+        console.error('Erro ao criar movie:', error);
         res.status(500).json({ erro: 'Erro interno do servidor' });
     }
 });
 
+// PUT /api/movies/:id - editar um filme existente
+app.put('/api/movies/:id', checkLogin, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { title, year, genre, rating, watched } = req.body;
 
+        const updatedMovie = await Movie.findByIdAndUpdate(
+            id,
+            { title, year, genre, rating, watched },
+            { new: true }
+        );
 
-// ===== INICIALIZAÇÃO DO SERVIDOR (também não se deve mexer)=====
+        if (!updatedMovie) return res.status(404).json({ erro: 'Filme não encontrado' });
 
-app.use((req, res) => {
-    return handle(req, res);
+        res.json(updatedMovie);
+    } catch (error) {
+        console.error('Erro ao atualizar movie:', error);
+        res.status(500).json({ erro: 'Erro interno do servidor' });
+    }
 });
 
+// DELETE /api/movies/:id - apagar filme
+app.delete('/api/movies/:id', checkLogin, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const deletedMovie = await Movie.findByIdAndDelete(id);
+        if (!deletedMovie) return res.status(404).json({ erro: 'Filme não encontrado' });
+
+        res.json(deletedMovie);
+    } catch (error) {
+        console.error('Erro ao deletar movie:', error);
+        res.status(500).json({ erro: 'Erro interno do servidor' });
+    }
+});
+
+// ===== NEXT.JS HANDLER =====
+app.use((req, res) => handle(req, res));
+
+// ===== INICIALIZAÇÃO DO SERVIDOR =====
 const PORT = process.env.PORT || 3000;
 
 const iniciarServidor = async () => {
     try {
-        await connectDB();
-        await nextApp.prepare();
+        await connectDB(); // conecta MongoDB
+        await nextApp.prepare(); // prepara Next.js
         app.listen(PORT, () => {
             console.log(`Servidor Next.js + Express a correr em http://localhost:${PORT}`);
         });
