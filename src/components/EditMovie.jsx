@@ -1,143 +1,134 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { updateMovieAPI } from '@/services/api';
 
 export default function EditMovie({ movie, onClose, onUpdated }) {
     const [form, setForm] = useState({
-        title: '',
-        year: '',
-        genre: '',
-        rating: null,
-        watched: false,
+        title: movie.title || '',
+        year: movie.year || '',
+        genre: movie.genre || '',
+        rating: movie.rating ?? '',
+        watched: Boolean(movie.watched), // ✅ asegura valor booleano real
     });
-    const [saving, setSaving] = useState(false);
+    const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
-    // 🔹 Cargar datos del filme seleccionado
-    useEffect(() => {
-        if (movie) {
-            setForm({
-                title: movie.title || '',
-                year: movie.year || '',
-                genre: movie.genre || '',
-                rating: movie.rating ?? null,
-                watched: movie.watched || false,
-            });
-        }
-    }, [movie]);
+    const handleChange = (field, value) => {
+        setForm((prev) => ({
+            ...prev,
+            [field]: value,
+        }));
+    };
 
-    // 🔹 Guardar cambios
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
-        setSaving(true);
+        setLoading(true);
 
         try {
             await updateMovieAPI(movie._id, form);
-            onUpdated(); // 🔄 refresca la lista
-            onClose(); // ❌ cierra el modal
+            if (onUpdated) onUpdated(); // ✅ refresca lista
+            onClose(); // ✅ cierra modal
         } catch (err) {
             console.error(err);
-            setError('Erro ao atualizar o filme.');
+            setError('Erro ao atualizar o filme');
         } finally {
-            setSaving(false);
+            setLoading(false);
         }
     };
 
-    if (!movie) return null;
-
     return (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-gray-900/95 border-2 border-yellow-500/40 rounded-3xl shadow-2xl p-6 w-full max-w-md">
-                <h2 className="text-2xl font-extrabold text-yellow-400 mb-4 text-center">
-                    ✏️ Editar Filme
-                </h2>
+        <div className="bg-gray-900/90 backdrop-blur-md rounded-3xl shadow-2xl p-8 border border-yellow-500 w-full">
+            <h2 className="text-3xl font-extrabold text-yellow-400 mb-6 text-center">
+                ✏️ Editar Filme
+            </h2>
 
-                {error && (
-                    <p className="bg-red-600 text-white px-4 py-2 rounded mb-4 text-center animate-pulse">
-                        {error}
-                    </p>
-                )}
+            {error && (
+                <p className="bg-red-600 text-white px-4 py-2 rounded mb-4 text-center">
+                    {error}
+                </p>
+            )}
 
-                <form className="space-y-3" onSubmit={handleSubmit}>
-                    <input
-                        type="text"
-                        placeholder="Título *"
-                        value={form.title}
-                        onChange={(e) => setForm({ ...form, title: e.target.value })}
-                        className="w-full px-4 py-2.5 rounded-xl bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-yellow-400"
-                        required
-                    />
+            <form onSubmit={handleSubmit} className="space-y-4">
+                <input
+                    type="text"
+                    placeholder="Título"
+                    value={form.title}
+                    onChange={(e) => handleChange('title', e.target.value)}
+                    className="w-full px-5 py-3 rounded-xl bg-gray-800 text-white focus:ring-2 focus:ring-yellow-400"
+                    required
+                />
 
-                    <input
-                        type="text"
-                        placeholder="Ano"
-                        value={form.year}
-                        onChange={(e) => setForm({ ...form, year: e.target.value })}
-                        className="w-full px-4 py-2.5 rounded-xl bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-yellow-400"
-                    />
+                <input
+                    type="text"
+                    placeholder="Ano"
+                    value={form.year}
+                    onChange={(e) => handleChange('year', e.target.value)}
+                    className="w-full px-5 py-3 rounded-xl bg-gray-800 text-white focus:ring-2 focus:ring-yellow-400"
+                />
 
-                    <input
-                        type="text"
-                        placeholder="Gênero"
-                        value={form.genre}
-                        onChange={(e) => setForm({ ...form, genre: e.target.value })}
-                        className="w-full px-4 py-2.5 rounded-xl bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-yellow-400"
-                    />
+                <input
+                    type="text"
+                    placeholder="Gênero"
+                    value={form.genre}
+                    onChange={(e) => handleChange('genre', e.target.value)}
+                    className="w-full px-5 py-3 rounded-xl bg-gray-800 text-white focus:ring-2 focus:ring-yellow-400"
+                />
 
-                    {/* ⭐ Rating */}
-                    <div>
-                        <label className="block text-gray-300 mb-2 text-sm font-medium">
-                            ⭐ Avaliação (0–10)
-                        </label>
-                        <div className="grid grid-cols-11 gap-1">
-                            {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
-                                <button
-                                    key={num}
-                                    type="button"
-                                    onClick={() => setForm({ ...form, rating: num })}
-                                    className={`py-2 px-0.5 rounded-lg font-bold text-xs transition-all duration-200 ${form.rating === num
-                                            ? 'bg-yellow-400 text-gray-900 scale-110 shadow-lg'
-                                            : 'bg-gray-700 text-gray-300 hover:bg-gray-600 hover:scale-105'
-                                        }`}
-                                >
-                                    {num}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* ✅ Checkbox */}
-                    <label className="flex items-center gap-2 text-gray-200">
-                        <input
-                            type="checkbox"
-                            checked={form.watched}
-                            onChange={(e) => setForm({ ...form, watched: e.target.checked })}
-                            className="w-5 h-5 text-yellow-400 rounded focus:ring-2 focus:ring-yellow-400"
-                        />
-                        Já assistido
+                {/* Rating con botones del 0 al 10 */}
+                <div>
+                    <label className="block text-gray-300 mb-2 text-sm font-medium">
+                        ⭐ Avaliação (0-10)
                     </label>
-
-                    {/* 🔘 Botones */}
-                    <div className="flex justify-between gap-3 mt-4 pt-2">
-                        <button
-                            type="submit"
-                            disabled={saving}
-                            className={`flex-1 bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold py-2.5 px-4 rounded-xl transition-all duration-300 ${saving ? 'bg-yellow-300 cursor-not-allowed animate-pulse' : ''
-                                }`}
-                        >
-                            {saving ? 'A atualizar...' : 'Guardar'}
-                        </button>
-
-                        <button
-                            type="button"
-                            onClick={onClose}
-                            className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 px-4 rounded-xl transition-all duration-300"
-                        >
-                            Cancelar
-                        </button>
+                    <div className="grid grid-cols-11 gap-1">
+                        {[...Array(11).keys()].map((num) => (
+                            <button
+                                key={num}
+                                type="button"
+                                onClick={() => handleChange('rating', num)}
+                                className={`py-2 px-1 rounded-lg font-bold text-xs sm:text-sm transition-all duration-200 ${form.rating === num
+                                        ? 'bg-yellow-400 text-gray-900 scale-110 shadow-lg'
+                                        : 'bg-gray-700 text-gray-300 hover:bg-gray-600 hover:scale-105'
+                                    }`}
+                            >
+                                {num}
+                            </button>
+                        ))}
                     </div>
-                </form>
-            </div>
+                </div>
+
+                {/* Checkbox "Já assistido" */}
+                <label className="flex items-center gap-3 text-gray-200">
+                    <input
+                        type="checkbox"
+                        checked={form.watched}
+                        onChange={(e) => handleChange('watched', e.target.checked)}
+                        className="w-5 h-5 text-yellow-400 rounded focus:ring-2 focus:ring-yellow-400"
+                    />
+                    Já assistido
+                </label>
+
+                {/* Botones */}
+                <div className="flex justify-between gap-3 mt-6">
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className={`flex-1 py-3 rounded-xl text-lg font-bold text-gray-900 transition-all duration-300 ${loading
+                                ? 'bg-yellow-300 cursor-not-allowed animate-pulse'
+                                : 'bg-yellow-400 hover:bg-yellow-500 shadow-lg hover:scale-105'
+                            }`}
+                    >
+                        {loading ? 'A guardar...' : 'Salvar Alterações'}
+                    </button>
+
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-xl transition-all duration-300 hover:scale-105"
+                    >
+                        Cancelar
+                    </button>
+                </div>
+            </form>
         </div>
     );
 }

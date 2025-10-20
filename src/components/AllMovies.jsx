@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { handleDeleteAPI, fetchMoviesAPI } from '@/services/api.js';
 
-export default function AllMovies({ refresh, onEdit }) {
+export default function AllMovies({ refresh, onEdit = () => { } }) {
     const [movies, setMovies] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -64,23 +64,21 @@ export default function AllMovies({ refresh, onEdit }) {
                             >
                                 {m.title}
                             </h2>
-
                             <div className="space-y-1 text-gray-300 mb-3">
                                 <p>🎬 Género: {m.genre || 'Não especificado'}</p>
                                 <p>📅 Ano: {m.year || 'Desconhecido'}</p>
                                 <p>⭐ Rating: {m.rating || 'N/A'}/10</p>
                             </div>
-
                             <p
                                 className={`mb-4 font-semibold text-sm ${m.watched ? 'text-green-400' : 'text-red-400'
                                     }`}
                             >
                                 {m.watched ? '✅ Visto' : '⏳ Por ver'}
                             </p>
-
                             <div className="flex justify-between gap-2">
+                                {/* ✅ Ahora abre el modal en Dashboard */}
                                 <button
-                                    onClick={() => onEdit(m)} // ✅ abre modal de edición
+                                    onClick={() => onEdit(m)}
                                     className="flex-1 bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold py-2 px-3 rounded-xl text-sm transition-all duration-300 hover:scale-105"
                                 >
                                     ✏️ Editar

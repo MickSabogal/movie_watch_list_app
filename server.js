@@ -4,8 +4,8 @@ const next = require('next');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 require('dotenv').config();
-const connectDB = require('./lib/mongodb'); // tu función de conexión a MongoDB
-const Movie = require('./models/Movie'); // tu modelo Movie
+const connectDB = require('./lib/mongodb'); // Função de conexão ao MongoDB
+const Movie = require('./models/Movie'); // Modelo Movie
 
 const dev = process.env.NODE_ENV !== 'production';
 const nextApp = next({ dev });
@@ -45,6 +45,7 @@ function checkLogin(req, res, nextMiddleware) {
 }
 
 // ===== ENDPOINTS DOS FILMES =====
+// 🔹 Ordem é MUITO IMPORTANTE: as rotas específicas vêm ANTES de /:id
 
 // GET /api/movies/watched - retorna apenas filmes VISTOS
 app.get('/api/movies/watched', checkLogin, async (req, res) => {
@@ -52,7 +53,7 @@ app.get('/api/movies/watched', checkLogin, async (req, res) => {
         const movies = await Movie.find({ watched: true });
         res.json(movies);
     } catch (error) {
-        console.error('Erro ao carregar movies vistos:', error);
+        console.error('Erro ao carregar filmes vistos:', error);
         res.status(500).json({ erro: 'Erro interno do servidor' });
     }
 });
@@ -63,7 +64,7 @@ app.get('/api/movies/notwatched', checkLogin, async (req, res) => {
         const movies = await Movie.find({ watched: false });
         res.json(movies);
     } catch (error) {
-        console.error('Erro ao carregar movies não vistos:', error);
+        console.error('Erro ao carregar filmes não vistos:', error);
         res.status(500).json({ erro: 'Erro interno do servidor' });
     }
 });
@@ -74,12 +75,12 @@ app.get('/api/movies/sorted', checkLogin, async (req, res) => {
         const movies = await Movie.find().sort({ rating: -1 });
         res.json(movies);
     } catch (error) {
-        console.error('Erro ao carregar movies:', error);
+        console.error('Erro ao carregar filmes ordenados:', error);
         res.status(500).json({ erro: 'Erro interno do servidor' });
     }
 });
 
-// GET /api/movies/:id - obter UMA película específica (DEBE IR ANTES DE GET /api/movies)
+// GET /api/movies/:id - obter UMA película específica
 app.get('/api/movies/:id', checkLogin, async (req, res) => {
     try {
         const { id } = req.params;
@@ -87,7 +88,7 @@ app.get('/api/movies/:id', checkLogin, async (req, res) => {
         if (!movie) return res.status(404).json({ erro: 'Filme não encontrado' });
         res.json(movie);
     } catch (error) {
-        console.error('Erro ao carregar movie:', error);
+        console.error('Erro ao carregar filme:', error);
         res.status(500).json({ erro: 'Erro interno do servidor' });
     }
 });
@@ -98,7 +99,7 @@ app.get('/api/movies', checkLogin, async (req, res) => {
         const movies = await Movie.find();
         res.json(movies);
     } catch (error) {
-        console.error('Erro ao carregar movies:', error);
+        console.error('Erro ao carregar filmes:', error);
         res.status(500).json({ erro: 'Erro interno do servidor' });
     }
 });
@@ -114,12 +115,13 @@ app.post('/api/movies', checkLogin, async (req, res) => {
             year,
             genre,
             rating,
-            watched
+            watched: watched === true || watched === 'true', // força booleano
         });
+
         const savedMovie = await newMovie.save();
         res.status(201).json(savedMovie);
     } catch (error) {
-        console.error('Erro ao criar movie:', error);
+        console.error('Erro ao criar filme:', error);
         res.status(500).json({ erro: 'Erro interno do servidor' });
     }
 });
@@ -132,7 +134,13 @@ app.put('/api/movies/:id', checkLogin, async (req, res) => {
 
         const updatedMovie = await Movie.findByIdAndUpdate(
             id,
-            { title, year, genre, rating, watched },
+            {
+                title,
+                year,
+                genre,
+                rating,
+                watched: watched === true || watched === 'true', // força booleano
+            },
             { new: true }
         );
 
@@ -140,7 +148,7 @@ app.put('/api/movies/:id', checkLogin, async (req, res) => {
 
         res.json(updatedMovie);
     } catch (error) {
-        console.error('Erro ao atualizar movie:', error);
+        console.error('Erro ao atualizar filme:', error);
         res.status(500).json({ erro: 'Erro interno do servidor' });
     }
 });
@@ -154,7 +162,7 @@ app.delete('/api/movies/:id', checkLogin, async (req, res) => {
 
         res.json(deletedMovie);
     } catch (error) {
-        console.error('Erro ao deletar movie:', error);
+        console.error('Erro ao deletar filme:', error);
         res.status(500).json({ erro: 'Erro interno do servidor' });
     }
 });
