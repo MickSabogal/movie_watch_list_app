@@ -46,8 +46,53 @@ function checkLogin(req, res, nextMiddleware) {
 
 // ===== ENDPOINTS DOS FILMES =====
 
-//GET /api/movies - Retorna todos os filmes
+// GET /api/movies/watched - retorna apenas filmes VISTOS
+app.get('/api/movies/watched', checkLogin, async (req, res) => {
+    try {
+        const movies = await Movie.find({ watched: true });
+        res.json(movies);
+    } catch (error) {
+        console.error('Erro ao carregar movies vistos:', error);
+        res.status(500).json({ erro: 'Erro interno do servidor' });
+    }
+});
 
+// GET /api/movies/notwatched - retorna apenas filmes NÃO VISTOS
+app.get('/api/movies/notwatched', checkLogin, async (req, res) => {
+    try {
+        const movies = await Movie.find({ watched: false });
+        res.json(movies);
+    } catch (error) {
+        console.error('Erro ao carregar movies não vistos:', error);
+        res.status(500).json({ erro: 'Erro interno do servidor' });
+    }
+});
+
+// GET /api/movies/sorted - retorna filmes ordenados por rating
+app.get('/api/movies/sorted', checkLogin, async (req, res) => {
+    try {
+        const movies = await Movie.find().sort({ rating: -1 });
+        res.json(movies);
+    } catch (error) {
+        console.error('Erro ao carregar movies:', error);
+        res.status(500).json({ erro: 'Erro interno do servidor' });
+    }
+});
+
+// GET /api/movies/:id - obter UMA película específica (DEBE IR ANTES DE GET /api/movies)
+app.get('/api/movies/:id', checkLogin, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const movie = await Movie.findById(id);
+        if (!movie) return res.status(404).json({ erro: 'Filme não encontrado' });
+        res.json(movie);
+    } catch (error) {
+        console.error('Erro ao carregar movie:', error);
+        res.status(500).json({ erro: 'Erro interno do servidor' });
+    }
+});
+
+// GET /api/movies - retorna todos os filmes
 app.get('/api/movies', checkLogin, async (req, res) => {
     try {
         const movies = await Movie.find();
@@ -58,43 +103,6 @@ app.get('/api/movies', checkLogin, async (req, res) => {
     }
 });
 
-//GET /api/movies/watched=true - retorna filmes filtrados por vistos
-
-app.get('/api/movies/watched', checkLogin, async (req, res) => {
-    try {
-        const { watched } = req.query;
-        const movies = await Movie.find({ watched: watched === 'true' });
-        res.json(movies);
-    } catch (error) {
-        console.error('Erro ao carregar movies:', error);
-        res.status(500).json({ erro: 'Erro interno do servidor' });
-    }
-});
-
-//GET /api/movies/watched=false - retorna filmes filtrados por não vistos
-
-app.get('/api/movies/watched', checkLogin, async (req, res) => {
-    try {
-        const { notWatched } = req.query;
-        const movies = await Movie.find({ watched: notWatched === 'false' });
-        res.json(movies);
-    } catch (error) {
-        console.error('Erro ao carregar movies:', error);
-        res.status(500).json({ erro: 'Erro interno do servidor' });
-    }
-});
-
-//GET /api/movies/sorted?by=rating - retorna filmes ordenados por rating
-
-app.get('/api/movies/sorted', checkLogin, async (req, res) => {
-    try {
-        const movies = await Movie.find().sort({ rating: -1 });
-        res.json(movies);
-    } catch (error) {
-        console.error('Erro ao carregar movies:', error);
-        res.status(500).json({ erro: 'Erro interno do servidor' });
-    }
-});
 // POST /api/movies - adicionar um filme novo
 app.post('/api/movies', checkLogin, async (req, res) => {
     try {

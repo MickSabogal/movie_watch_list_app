@@ -2,17 +2,23 @@ import { React, useState } from 'react';
 import { useRouter } from 'next/router';
 import AddMovie from '@/components/AddMovie';
 import AllMovies from '@/components/AllMovies';
+import EditMovie from '@/components/EditMovie';
 
 export default function Dashboard() {
     const router = useRouter();
     const [refresh, setRefresh] = useState(false);
+    const [editingMovie, setEditingMovie] = useState(null); // 🔹 Nuevo estado para editar
 
     const handleLogout = () => {
         // lógica de logout 
         router.push('/');
     };
 
+    // 🔹 Forzar recarga da lista após adicionar/editar
     const handleRefresh = () => setRefresh((prev) => !prev);
+
+    // 🔹 Fechar o modal de edição
+    const handleCloseEdit = () => setEditingMovie(null);
 
     return (
         <div
@@ -34,25 +40,40 @@ export default function Dashboard() {
                         onClick={handleLogout}
                         className="bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold py-2 px-5 rounded-xl transition-all duration-300 shadow-md hover:scale-105"
                     >
-                        LogOut
+                        Logout
                     </button>
                 </div>
 
                 {/* Botão para adicionar filme */}
                 <AddMovie onAdd={handleRefresh} />
 
-                {/* Lista de películas */}
-                <AllMovies refresh={refresh} />
+                {/* Lista de filmes (agora com suporte à edição) */}
+                <AllMovies refresh={refresh} onEdit={setEditingMovie} />
             </div>
 
-            {/* Animación del fondo */}
+            {/* 🔹 Modal de edição */}
+            {editingMovie && (
+                <EditMovie
+                    movie={editingMovie}
+                    onClose={handleCloseEdit}
+                    onUpdated={handleRefresh}
+                />
+            )}
+
+            {/* Animação do fundo */}
             <style jsx>{`
-        @keyframes gradientAnimation {
-          0% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
-          100% { background-position: 0% 50%; }
-        }
-      `}</style>
+                @keyframes gradientAnimation {
+                    0% {
+                        background-position: 0% 50%;
+                    }
+                    50% {
+                        background-position: 100% 50%;
+                    }
+                    100% {
+                        background-position: 0% 50%;
+                    }
+                }
+            `}</style>
         </div>
     );
 }
