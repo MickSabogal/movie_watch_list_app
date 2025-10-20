@@ -16,7 +16,20 @@ export default function AllMovies({ refresh }) {
             setMovies(res);
         } catch (err) {
             setError(err.message);
-        }}
+        }
+        finally {
+            setLoading(false);
+        }
+    }
+
+    async function handleDelete(id) {
+        try {
+            await handleDeleteAPI(id);
+            fetchMovies();
+        } catch (err) {
+            setError(err.message);
+        }
+    }
     useEffect(() => {
         fetchMovies();
     }, [refresh]);
@@ -71,7 +84,7 @@ export default function AllMovies({ refresh }) {
                             ✏️ Editar
                         </button>
                         <button
-                            onClick={() => handleDeleteAPI(m._id)}
+                            onClick={() => handleDelete(m._id)}
                             className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-3 rounded-xl text-sm transition-all duration-300 hover:scale-105"
                         >
                             🗑️ Apagar

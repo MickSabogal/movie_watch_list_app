@@ -1,6 +1,6 @@
 // GET /api/movies - lista todas (filtros + orden)
 
-const fetchMoviesAPI = async () => {
+export async function fetchMoviesAPI(){
     try {
         const res = await fetch('/api/movies');
         if (!res.ok) throw new Error('Error ao carregar os filmes');
@@ -14,7 +14,7 @@ const fetchMoviesAPI = async () => {
 
 //DELETE /api/movies/:id - apagar um filme
 
-const handleDeleteAPI = async (id) => {
+export async function handleDeleteAPI(id) {
     try {
         const res = await fetch(`/api/movies/${id}`, { method: 'DELETE' });
         if (!res.ok) throw new Error('Error ao apagar o filme');
