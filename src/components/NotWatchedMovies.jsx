@@ -1,20 +1,29 @@
+// Importações necessarias: Hook e chamada ao API
+
 import { useState } from 'react';
 import { fetchNotWatchedMoviesAPI } from '@/services/api';
 
+// Normaliza valor de 'watched' para booleano
 const normalizeWatched = (v) => v === true || v === 'true';
 
+// Exportação do componente NotWatchedMovies
 export default function NotWatchedMovies({ onShow, isActive }) {
+    // Estados de carregamento e erros
+
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
+    // Função para buscar filmes não assistidos
     const handleFetch = async () => {
         setError('');
 
+        // Se já está ativo, volta à lista normal
         if (isActive) {
             onShow(null); 
             return;
         }
 
+        // Busca filmes não assistidos
         setLoading(true);
         try {
             const data = await fetchNotWatchedMoviesAPI();
@@ -29,6 +38,7 @@ export default function NotWatchedMovies({ onShow, isActive }) {
         }
     };
 
+    // Renderização do componente
     return (
         <div className="flex flex-col items-center">
             <button

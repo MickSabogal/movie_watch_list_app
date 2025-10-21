@@ -1,3 +1,5 @@
+// Definição do estrutura almacenados no MongoDB, vai usar os controladores em server.js
+
 const mongoose = require('mongoose');
 
 const movieSchema = new mongoose.Schema({

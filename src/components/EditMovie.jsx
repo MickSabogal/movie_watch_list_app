@@ -1,7 +1,11 @@
+// Importações necessárias: Hook e chamada ao API
+
 import { useState } from 'react';
 import { updateMovieAPI } from '@/services/api';
 
+// Exportação do componente EditMovie
 export default function EditMovie({ movie, onClose, onUpdated }) {
+    // Estado do formulário inicializado com os dados do filme
     const [form, setForm] = useState({
         title: movie.title || '',
         year: movie.year || '',
@@ -9,9 +13,12 @@ export default function EditMovie({ movie, onClose, onUpdated }) {
         rating: movie.rating ?? '',
         watched: Boolean(movie.watched), // ✅ asegura valor booleano real
     });
+
+    // Estado de carregamento e erros
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
+    // Manejo de cambios en el formulario
     const handleChange = (field, value) => {
         setForm((prev) => ({
             ...prev,
@@ -19,6 +26,7 @@ export default function EditMovie({ movie, onClose, onUpdated }) {
         }));
     };
 
+    // Manejo del envío del formulario
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
@@ -36,6 +44,7 @@ export default function EditMovie({ movie, onClose, onUpdated }) {
         }
     };
 
+    // Renderização do formulário de edição
     return (
         <div className="bg-gray-900/90 backdrop-blur-md rounded-3xl shadow-2xl p-8 border border-yellow-500 w-full">
             <h2 className="text-3xl font-extrabold text-yellow-400 mb-6 text-center">

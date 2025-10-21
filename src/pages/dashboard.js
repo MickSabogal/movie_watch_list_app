@@ -1,3 +1,5 @@
+// Importações necessárias
+
 import { React, useState } from 'react';
 import { useRouter } from 'next/router';
 import AddMovie from '@/components/AddMovie';
@@ -7,21 +9,24 @@ import MoviesByRating from '@/components/MoviesByRating';
 import WatchedMovies from '@/components/WatchedMovies';
 import NotWatchedMovies from '@/components/NotWatchedMovies';
 
+// Exportação do componente Dashboard
 export default function Dashboard() {
+    // Estados e roteador
     const router = useRouter();
     const [refresh, setRefresh] = useState(false);
     const [editingMovie, setEditingMovie] = useState(null);
     const [filteredMovies, setFilteredMovies] = useState(null);
     const [activeFilter, setActiveFilter] = useState(null); // 🔹 Solo un filtro activo
 
+    // Manejo de acciones
     const handleLogout = () => router.push('/');
     const handleRefresh = () => setRefresh((prev) => !prev);
     const handleCloseEdit = () => setEditingMovie(null);
 
-    // 🔹 Manejo de filtros (solo uno a la vez)
+    // Manejo de filtros (solo uno a la vez)
     const handleShowFiltered = (movies, filterName) => {
         if (activeFilter === filterName) {
-            // Si el filtro ya está activo → vuelve a la lista normal
+            // Se o filtro já está ativo, desativa-o
             setFilteredMovies(null);
             setActiveFilter(null);
         } else {

@@ -1,21 +1,27 @@
+// Importações necessarias: Hook e chamada ao API
+
 import { useState } from 'react';
 import { fetchMoviesByRatingAPI } from '@/services/api';
 
+// Exportação do componente MoviesByRating
 export default function MoviesByRating({ onShow, isActive }) {
+    // Estados de carregamento e erros
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
-
+    // Função para buscar filmes por rating
     const handleFetch = async () => {
         setError('');
 
+        // Se já está ativo, volta à lista normal
         if (isActive) {
-            onShow(null); // 🔙 voltar à lista normal
+            onShow(null); 
             return;
         }
 
+        // Busca filmes por rating
         setLoading(true);
         try {
-            const data = await fetchMoviesByRatingAPI(); // ✅ usa /api/movies/sorted
+            const data = await fetchMoviesByRatingAPI(); 
             onShow(data);
         } catch (err) {
             console.error(err);
@@ -25,6 +31,7 @@ export default function MoviesByRating({ onShow, isActive }) {
         }
     };
 
+    // Renderização do componente
     return (
         <div className="flex flex-col items-center">
             <button

@@ -1,7 +1,10 @@
+// Importações necessárias: Hook e chamada ao API
+
 import { useState } from 'react';
-import { addMovieAPI } from '@/services/api'; // ✅ Import del API centralizado
+import { addMovieAPI } from '@/services/api';
 
 export default function AddMovie({ onAdd }) {
+    // Estado do formulário
     const [form, setForm] = useState({
         title: '',
         year: '',
@@ -9,10 +12,11 @@ export default function AddMovie({ onAdd }) {
         rating: null,
         watched: false,
     });
+    // Estado de carregamento e erros
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
-    // 🔹 Manejo del envío del formulario
+    // Manejo del envío del formulario
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
@@ -24,6 +28,7 @@ export default function AddMovie({ onAdd }) {
 
         setLoading(true);
         try {
+            // Chamada ao API para adicionar o filme
             await addMovieAPI({
                 title: form.title,
                 year: form.year ? Number(form.year) : undefined,
@@ -32,7 +37,7 @@ export default function AddMovie({ onAdd }) {
                 watched: form.watched,
             });
 
-            // 🔄 Limpia formulario y refresca lista
+            // Limpia formulario y refresca lista
             setForm({
                 title: '',
                 year: '',
@@ -40,7 +45,7 @@ export default function AddMovie({ onAdd }) {
                 rating: null,
                 watched: false,
             });
-
+            // notifica ao dashboard para fazer refresh
             if (onAdd) onAdd();
         } catch (err) {
             console.error(err);
@@ -50,6 +55,7 @@ export default function AddMovie({ onAdd }) {
         }
     };
 
+    // Renderização do formulário
     return (
         <form
             onSubmit={handleSubmit}

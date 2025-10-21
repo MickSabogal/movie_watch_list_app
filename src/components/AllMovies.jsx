@@ -1,11 +1,15 @@
+// Importações necessárias: Hook e chamada ao API
+
 import { useState, useEffect } from 'react';
 import { handleDeleteAPI, fetchMoviesAPI } from '@/services/api.js';
 
 export default function AllMovies({ refresh, onEdit = () => { } }) {
+    // Estados do componente
     const [movies, setMovies] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
+    // Função para buscar filmes
     async function fetchMovies() {
         try {
             setLoading(true);
@@ -17,7 +21,7 @@ export default function AllMovies({ refresh, onEdit = () => { } }) {
             setLoading(false);
         }
     }
-
+    // Função para apagar um filme
     async function handleDelete(id) {
         try {
             await handleDeleteAPI(id);
@@ -26,11 +30,12 @@ export default function AllMovies({ refresh, onEdit = () => { } }) {
             setError(err.message);
         }
     }
-
+    // Efeito para buscar filmes ao montar o componente ou quando 'refresh' mudar
     useEffect(() => {
         fetchMovies();
     }, [refresh]);
 
+    // Renderização do componente
     return (
         <div className="w-full min-h-[60vh] flex flex-col items-center justify-start">
             {loading && (

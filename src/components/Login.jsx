@@ -1,3 +1,5 @@
+// Componentes de Login
+
 import { useState } from 'react';
 import { useRouter } from 'next/router';
 
@@ -38,6 +40,7 @@ export default function Login() {
         }
     };
 
+    // Renderização do componente
     return (
         <div
             className="min-h-screen flex items-center justify-center px-4"
