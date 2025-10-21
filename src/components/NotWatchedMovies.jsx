@@ -11,7 +11,7 @@ export default function NotWatchedMovies({ onShow, isActive }) {
         setError('');
 
         if (isActive) {
-            onShow(null); // 🔙 voltar à lista normal
+            onShow(null); 
             return;
         }
 
